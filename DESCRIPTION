@@ -1,0 +1,17 @@
+Package: jhmstools
+Title: Tools for mass spec data exploration
+Version: 0.0.1
+Authors@R: 
+    person("Jukka", "Hintikka", , "juenhint@jyu.fi", role = c("aut", "cre"))
+Description: Tools for mass spec data exploration and visualization in the format of MS-Dial.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests:
+    mass2adduct
+Depends: 
+    R (>= 2.10)
+Imports:
+    ggplot2
+LazyData: true
