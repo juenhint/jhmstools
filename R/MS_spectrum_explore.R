@@ -5,12 +5,13 @@
 #' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
 #' @param var character string. The rowname of the feature (feature_ID) to plot
 #' @param log logical. Whether to log-transform
+#' @param ... all other params are passed to `hist()`
 #'
 #' @export
 #' @importFrom graphics hist
-histo <- function(exprs, var, log=F) {
-  if (!log) hist(t(exprs[var,]))
-  else hist(log(t(exprs[var,])))
+histo <- function(exprs, var, log=F, ...) {
+  if (!log) hist(t(exprs[var,]), ...)
+  else hist(log(t(exprs[var,])), ...)
 }
 
 #' Find featured by compound names

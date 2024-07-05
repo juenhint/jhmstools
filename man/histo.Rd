@@ -4,7 +4,7 @@
 \alias{histo}
 \title{Plot histogram of peak areas}
 \usage{
-histo(exprs, var, log = F)
+histo(exprs, var, log = F, ...)
 }
 \arguments{
 \item{exprs}{a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)}
@@ -12,6 +12,8 @@ histo(exprs, var, log = F)
 \item{var}{character string. The rowname of the feature (feature_ID) to plot}
 
 \item{log}{logical. Whether to log-transform}
+
+\item{...}{all other params are passed to \code{hist()}}
 }
 \description{
 Plot histogram of peak areas
