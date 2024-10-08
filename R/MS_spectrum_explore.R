@@ -1,9 +1,22 @@
 
+#'Get correlation matrix between selected features
+#'
+#' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
+#' @param names vector of character strings. The names of the features (feature IDs)
+#' @param ... all other params are passed to `cor()`
+#'
+#' @return a square matrix of correlations
+#'
+#' @export
+#' @importFrom stats cor
+get_cors <- function(exprs, names, use="complete.obs", ...) {
+  return(cor(t(exprs[names,]), use=use, ...))
+}
 
 #' Plot histogram of peak areas
 #'
 #' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
-#' @param var character string. The rowname of the feature (feature_ID) to plot
+#' @param var character string. The name of the feature (feature ID) to plot
 #' @param log logical. Whether to log-transform
 #' @param ... all other params are passed to `hist()`
 #'
@@ -107,9 +120,9 @@ get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.Mz", isot_col
 #' @return ggplot object. The mass spec plot.
 #' @export
 #' @import ggplot2
-plot_spectrum <- function(sp, alpha=0.6, ...) {
+plot_spectrum <- function(sp, alpha=0.6, fill="blue3", width = width, ...) {
   requireNamespace("ggplot2")
-  p <- ggplot(sp[["spectrum"]], aes(x=mz, y=rel)) + geom_col(fill = "blue3", alpha=0.6, width = 1, ...) +
+  p <- ggplot(sp[["spectrum"]], aes(x=mz, y=rel)) + geom_col(fill = fill, alpha=alpha, width = 1, ...) +
     geom_hline(yintercept = 0) + geom_text(aes(label=mz),  hjust = 0, size=4, alpha=alpha) +
     labs(caption=paste0("Precursor m/z ",sp[["precursor"]]))
   print(p)
@@ -126,9 +139,9 @@ plot_spectrum <- function(sp, alpha=0.6, ...) {
 #' @return ggplot object. The mass spec plot.
 #' @export
 #' @import ggplot2
-plot_isotope <- function(sp, alpha=0.6, ...) {
+plot_isotope <- function(sp, alpha=0.6, fill="blue3", width = width, ...) {
   requireNamespace("ggplot2")
-  p <- ggplot(sp[["isotope_spectrum"]], aes(x=mz, y=rel)) + geom_col(fill = "blue3", alpha=0.6,width = 1, ...) +
+  p <- ggplot(sp[["isotope_spectrum"]], aes(x=mz, y=rel)) + geom_col(fill=fill, alpha=alpha, width=1, ...) +
     geom_hline(yintercept = 0) + geom_text(aes(label=mz),  hjust = 0, size=4, alpha=alpha) +
     labs(caption=paste0("Precursor m/z ",sp[["precursor"]]))
   print(p)
@@ -218,3 +231,31 @@ find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, 
   }
 }
 
+#'Find features by presence of MS2 peaks
+#'
+#' @param data a data.frame object. The feature data of the MS peaks
+#' @param peaks numeric or vector of numeric values. The m/z values of the MS2 peaks to search
+#' @param operator c(all, any) operator to use with multiple given peaks. Defaults to all.
+#' @param tol numeric. m/z tolerance for peak matching
+#' @param lim numeric. Relative abundance cutoff of peaks
+#' @param ms2_col character string. Name of the MS2 spectrum column
+#'
+#' @return a vector of hits (feature IDs)
+#'
+#' @export
+find_by_MS2peaks <- function(data, peaks, operator=all, tol=0.005, lim=0.03, ms2_col="MS.MS.spectrum") {
+  hits <- c()
+  for (r in rownames(data)) {
+    spectrum <- data[r,ms2_col]
+    if (is.na(spectrum)) next
+    spectrum <- strsplit(spectrum,split = " ")[[1]]
+    spectrum <- mapply(spectrum, FUN=strsplit, MoreArgs = list(split=":"))
+    spectrum <- as.data.frame(apply(as.data.frame(spectrum), MARGIN=1, FUN=as.numeric))
+    spectrum[[3]] <- spectrum[,2]/max(spectrum[,2])
+    colnames(spectrum) <- c("mz","ab","rel")
+    spectrum <- spectrum[spectrum$rel>lim,]
+    peaks_hits <- mapply(peaks, FUN=function(p) any(abs(p - spectrum$mz) < tol))
+    if (operator(peaks_hits)) hits <- c(hits, r)
+  }
+  return(hits)
+}

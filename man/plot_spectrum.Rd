@@ -4,7 +4,7 @@
 \alias{plot_spectrum}
 \title{Plot ms2 spectrum}
 \usage{
-plot_spectrum(sp, alpha = 0.6, ...)
+plot_spectrum(sp, alpha = 0.6, fill = "blue3", width = width, ...)
 }
 \arguments{
 \item{sp}{list. The spectrum returned by \code{get_spectrum}}

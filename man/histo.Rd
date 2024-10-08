@@ -9,7 +9,7 @@ histo(exprs, var, log = F, ...)
 \arguments{
 \item{exprs}{a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)}
 
-\item{var}{character string. The rowname of the feature (feature_ID) to plot}
+\item{var}{character string. The name of the feature (feature ID) to plot}
 
 \item{log}{logical. Whether to log-transform}
 

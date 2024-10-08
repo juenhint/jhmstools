@@ -4,7 +4,7 @@
 \alias{plot_isotope}
 \title{Plot isotope spectrum}
 \usage{
-plot_isotope(sp, alpha = 0.6, ...)
+plot_isotope(sp, alpha = 0.6, fill = "blue3", width = width, ...)
 }
 \arguments{
 \item{sp}{list. The spectrum returned by \code{get_spectrum} or \code{get_isotope_spectrum}}
