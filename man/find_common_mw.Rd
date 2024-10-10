@@ -21,9 +21,9 @@ find_common_mw(
 
 \item{var2}{character string. Name of the 2nd feature to extract}
 
-\item{mode1}{character string. Optional. Polarization of 1st adduct. Extracts from feature name by default.}
+\item{mode1}{regular expression. Optional. Polarization of 1st adduct. Extracts from feature name by default.}
 
-\item{mode2}{character string. Optional. Polarization of 2nd adduct. Extracts from feature name by default.}
+\item{mode2}{regular expression. Optional. Polarization of 2nd adduct. Extracts from feature name by default.}
 
 \item{tol}{Δ m/z tolerance for adducts}
 

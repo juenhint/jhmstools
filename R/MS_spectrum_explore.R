@@ -1,4 +1,34 @@
 
+#' Read data from an MS-Dial format excel file (feature data \* abundances \* sample data)
+#'
+#' @param file string. The name of the .xlsx-file to read.
+#' @param feature_IDs_present logical. Whether the first column contains unique feature-IDs for the variables
+#'
+#' @return A list with 3 elements (data frames):
+#'  Expressions or peak integrals
+#'  Metadata for the features
+#'  Metadata for the samples
+#'
+#' @export
+#'
+#' @import openxlsx
+read_tables_from_MSDIALfile <- function(file, feature_IDs_present=TRUE) {
+  test <- openxlsx::read.xlsx(file, colNames = FALSE, rowNames = FALSE, skipEmptyRows = FALSE, skipEmptyCols = FALSE)
+  range.ecols <- 1:(table(is.na(test[1,]))[["TRUE"]] + 1)
+  range.dcols <- table(is.na(test[1,]))[["TRUE"]]+1:dim(test)[[2]]
+  range.erows <- 1:(table(is.na(test[,1]))[["TRUE"]] + 1)
+  range.drows <- table(is.na(test[,1]))[["TRUE"]]+1:dim(test)[[1]]
+  feature_data <- openxlsx::read.xlsx(file, colNames = TRUE, rowNames = feature_IDs_present, rows = range.drows, cols=range.ecols)
+  exprs <- openxlsx::read.xlsx(file, colNames = TRUE, rowNames = FALSE, rows = range.drows, cols=range.dcols[-1])
+  rownames(exprs) <- rownames(feature_data)
+  pheno_data <- openxlsx::read.xlsx(file, colNames = FALSE, rowNames = TRUE, rows = range.erows, cols=range.dcols)
+  colnames(pheno_data) <- pheno_data[range.drows[1],]
+  pheno_data <- as.data.frame(t(pheno_data))
+  if (!all(colnames(exprs) == rownames(pheno_data))) print("SAMPLE NAMES DO NOT MATCH")
+  if (!all(rownames(exprs) == rownames(feature_data))) print("FEATURE NAMES DO NOT MATCH")
+  return(list(exprs=exprs, feature_data=feature_data, pheno_data=pheno_data))
+}
+
 #'Get correlation matrix between selected features
 #'
 #' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
@@ -38,13 +68,14 @@ histo <- function(exprs, var, log=FALSE, ...) {
 #' Find featured by compound names
 #'
 #' @param data a data.frame object. The feature data of the MS peaks
-#' @param name character string. The compound name to search
-#' @param column_to_search character string. The column containing annotations
+#' @param name regular expression. The compound name to search
+#' @param column_to_search regular expression. The column containing annotations
 #' @param ignore.case logical. Whether to ignore case in search
 #'
 #' @return a vector of strings. The feature IDs of the hits
 #' @export
-find_by_compound <- function(data, name, column_to_search="Metabolite.name", ignore.case=TRUE) {
+find_by_compound <- function(data, name, column_to_search="Metabolite.*name", ignore.case=TRUE) {
+  column_to_search<-grep(column_to_search, colnames(data))[1]
   inds <- grep(name, data[,column_to_search], ignore.case = ignore.case)
   return(rownames(data)[inds])
 }
@@ -55,10 +86,10 @@ find_by_compound <- function(data, name, column_to_search="Metabolite.name", ign
 #' @param var character string. The rowname of the feature (feature_ID) to extract
 #' @param lim numeric. Relative abundance cutoff of MS2 peaks
 #' @param itlim numeric. Relative abundance cutoff of isotope peaks
-#' @param mz_col character string. Name of the m/z column
-#' @param ms2_col character string. Name of the MS2 spectrm column
-#' @param adduct_col character string. Name of the adduct column
-#' @param isot_col character string. Name of the isotope spectrm column
+#' @param mz_col regular expression. Name of the m/z column
+#' @param ms2_col regular expression. Name of the MS2 spectrm column
+#' @param adduct_col regular expression. Name of the adduct column
+#' @param isot_col regular expression. Name of the isotope spectrm column
 #'
 #' @return A list of 5 objects:
 #'  precursor = m/z value of the precursor ion
@@ -68,16 +99,22 @@ find_by_compound <- function(data, name, column_to_search="Metabolite.name", ign
 #'  feature = the variable name
 #' @export
 #'
-get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.Mz", ms2_col="MS.MS.spectrum", adduct_col="Adduct.type", isot_col="MS1.isotopic.spectrum") {
+get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.*Mz", ms2_col="MS.*MS.*spectrum", adduct_col="Adduct.*type", isot_col="MS1.*isotopic.*spectrum") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  ms2_col <- grep(ms2_col, colnames(data), ignore.case = T, value = T)[1]
+  adduct_col <- grep(adduct_col, colnames(data), ignore.case = T, value = T)[1]
+  isot_col <- grep(isot_col, colnames(data), ignore.case = T, value = T)[1]
   precursor <- data[var,mz_col]
   spectrum <- data[var,ms2_col]
   adduct <- data[var,adduct_col]
-  itspectrum <- get_isotope_spectrum(data, var, lim=itlim, mz_col=mz_col, adduct_col=adduct_col, isot_col=isot_col)[["spectrum"]]
+  itspectrum <- get_isotope_spectrum(data, var, lim=itlim, mz_col=mz_col, adduct_col=adduct_col, isot_col=isot_col)[["isotope_spectrum"]]
   id <- var
+
   spectrum <- strsplit(spectrum,split = " ")[[1]]
   spectrum <- mapply(spectrum, FUN=strsplit, MoreArgs = list(split=":"))
-  spectrum <- as.data.frame(apply(as.data.frame(spectrum), MARGIN=1, FUN=as.numeric))
-  spectrum[[3]] <- spectrum[,2]/max(spectrum[,2])
+  spectrum <- matrix(apply(as.data.frame(spectrum), MARGIN=1, FUN=as.numeric), ncol=2)
+  spectrum <- as.data.frame(cbind(spectrum, spectrum[,2]/max(spectrum[,2])))
+
   colnames(spectrum) <- c("mz","ab","rel")
   ret <- list(precursor=precursor, spectrum = spectrum[spectrum$rel>lim,], adduct=adduct,
               isotope_spectrum=itspectrum, feature=id)
@@ -90,9 +127,9 @@ get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.Mz", ms2_
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param var character string. The rowname of the feature (feature_ID) to extract
 #' @param lim numeric. Relative abundance cutoff of isotope peaks
-#' @param mz_col character string. Name of the m/z column
-#' @param isot_col character string. Name of the isotope spectrm column
-#' @param adduct_col character string. Name of the adduct column
+#' @param mz_col regular expression. Name of the m/z column
+#' @param isot_col regular expression. Name of the isotope spectrm column
+#' @param adduct_col regular expression. Name of the adduct column
 #'
 #' @return A list of 4 objects:
 #'  precursor = m/z value of the precursor ion
@@ -102,7 +139,10 @@ get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.Mz", ms2_
 #'
 #' @export
 #'
-get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.Mz", isot_col="MS1.isotopic.spectrum", adduct_col="Adduct.type") {
+get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.*Mz", isot_col="MS1.*isotopic.*spectrum", adduct_col="Adduct.*type") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  adduct_col <- grep(adduct_col, colnames(data), ignore.case = T, value = T)[1]
+  isot_col <- grep(isot_col, colnames(data), ignore.case = T, value = T)[1]
   precursor <- data[var,mz_col]
   spectrum <- data[var,isot_col]
   adduct <- data[var,adduct_col]
@@ -164,7 +204,7 @@ plot_isotope <- function(sp, alpha=0.6, fill="blue3", width = 1, ...) {
 #' Find adducts for molecular mass
 #'
 #' @param mass numeric. Molecular mass of the precursor
-#' @param mode character string. Which polarization to use.
+#' @param mode regular expression. Which polarization to use.
 #'
 #' @return data.frame. The m/z values calculated for different adducts
 #' @export
@@ -179,15 +219,16 @@ find_adducts <- function(mass, mode="pos") {
 
 #' Find molecular weights for adduct
 #'
-#' @param feature_data a data.frame object. The feature data of the MS peaks
+#' @param data a data.frame object. The feature data of the MS peaks
 #' @param var character string. Name of the feature to extract
-#' @param mode character string. Optional. Which polarization to use. Extracts from feature name by default.
+#' @param mode regular expression. Optional. Which polarization to use. Extracts from feature name by default.
 #' @param mz_col character string. Name of the m/z column
 #'
 #' @return data.frame. The molecular weights derived from different assumed adducts
 #' @export
-find_mws <- function(feature_data, var, mode=var, mz_col="Average.Mz") {
-  mz = feature_data[var,mz_col]
+find_mws <- function(data, var, mode=var, mz_col="Average.*Mz") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  mz = data[var,mz_col]
   #load("R_files/adducts_pos.Rda")
   #load("R_files/adducts_neg.Rda")
   addcts <- list(adducts.neg,adducts.pos)[[grepl("pos", mode, ignore.case = T)+1]]
@@ -198,7 +239,7 @@ find_mws <- function(feature_data, var, mode=var, mz_col="Average.Mz") {
 #' Find molecular weights for adduct m/z
 #'
 #' @param mz numeric. m/z of the precursor
-#' @param mode character string. Which polarization to use.
+#' @param mode regular expression. Which polarization to use.
 #'
 #' @return data.frame. The molecular weights derived from different assumed adducts
 #' @export
@@ -216,8 +257,8 @@ find_mws2 <- function(mz, mode) {
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param var1 character string. Name of the 1st feature to extract
 #' @param var2 character string. Name of the 2nd feature to extract
-#' @param mode1 character string. Optional. Polarization of 1st adduct. Extracts from feature name by default.
-#' @param mode2 character string. Optional. Polarization of 2nd adduct. Extracts from feature name by default.
+#' @param mode1 regular expression. Optional. Polarization of 1st adduct. Extracts from feature name by default.
+#' @param mode2 regular expression. Optional. Polarization of 2nd adduct. Extracts from feature name by default.
 #' @param tol Δ m/z tolerance for adducts
 #' @param use.mass2adduct whether to also get adduct data from the package mass2adduct
 #'
@@ -250,20 +291,21 @@ find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, 
 #' @param operator c(all, any) operator to use with multiple given peaks. Defaults to all.
 #' @param tol numeric. m/z tolerance for peak matching
 #' @param lim numeric. Relative abundance cutoff of peaks
-#' @param ms2_col character string. Name of the MS2 spectrum column
+#' @param ms2_col regular expression. Name of the MS2 spectrum column
 #'
 #' @return a vector of hits (feature IDs)
 #'
 #' @export
-find_by_MS2peaks <- function(data, peaks, operator=all, tol=0.005, lim=0.03, ms2_col="MS.MS.spectrum") {
+find_by_MS2peaks <- function(data, peaks, operator=all, tol=0.005, lim=0.03, ms2_col="MS.*MS.*spectrum") {
+  ms2_col <- grep(ms2_col, colnames(data), ignore.case = T, value = T)[1]
   hits <- c()
   for (r in rownames(data)) {
     spectrum <- data[r,ms2_col]
     if (is.na(spectrum)) next
     spectrum <- strsplit(spectrum,split = " ")[[1]]
     spectrum <- mapply(spectrum, FUN=strsplit, MoreArgs = list(split=":"))
-    spectrum <- as.data.frame(apply(as.data.frame(spectrum), MARGIN=1, FUN=as.numeric))
-    spectrum[[3]] <- spectrum[,2]/max(spectrum[,2])
+    spectrum <- matrix(apply(as.data.frame(spectrum), MARGIN=1, FUN=as.numeric), ncol=2)
+    spectrum <- as.data.frame(cbind(spectrum, spectrum[,2]/max(spectrum[,2])))
     colnames(spectrum) <- c("mz","ab","rel")
     spectrum <- spectrum[spectrum$rel>lim,]
     peaks_hits <- mapply(peaks, FUN=function(p) any(abs(p - spectrum$mz) < tol))

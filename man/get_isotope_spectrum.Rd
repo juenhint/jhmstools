@@ -8,9 +8,9 @@ get_isotope_spectrum(
   data,
   var,
   lim = 0,
-  mz_col = "Average.Mz",
-  isot_col = "MS1.isotopic.spectrum",
-  adduct_col = "Adduct.type"
+  mz_col = "Average.*Mz",
+  isot_col = "MS1.*isotopic.*spectrum",
+  adduct_col = "Adduct.*type"
 )
 }
 \arguments{
@@ -20,11 +20,11 @@ get_isotope_spectrum(
 
 \item{lim}{numeric. Relative abundance cutoff of isotope peaks}
 
-\item{mz_col}{character string. Name of the m/z column}
+\item{mz_col}{regular expression. Name of the m/z column}
 
-\item{isot_col}{character string. Name of the isotope spectrm column}
+\item{isot_col}{regular expression. Name of the isotope spectrm column}
 
-\item{adduct_col}{character string. Name of the adduct column}
+\item{adduct_col}{regular expression. Name of the adduct column}
 }
 \value{
 A list of 4 objects:

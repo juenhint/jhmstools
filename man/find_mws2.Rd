@@ -9,7 +9,7 @@ find_mws2(mz, mode)
 \arguments{
 \item{mz}{numeric. m/z of the precursor}
 
-\item{mode}{character string. Which polarization to use.}
+\item{mode}{regular expression. Which polarization to use.}
 }
 \value{
 data.frame. The molecular weights derived from different assumed adducts

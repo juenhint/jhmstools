@@ -10,7 +10,7 @@ find_by_MS2peaks(
   operator = all,
   tol = 0.005,
   lim = 0.03,
-  ms2_col = "MS.MS.spectrum"
+  ms2_col = "MS.*MS.*spectrum"
 )
 }
 \arguments{
@@ -24,7 +24,7 @@ find_by_MS2peaks(
 
 \item{lim}{numeric. Relative abundance cutoff of peaks}
 
-\item{ms2_col}{character string. Name of the MS2 spectrum column}
+\item{ms2_col}{regular expression. Name of the MS2 spectrum column}
 }
 \value{
 a vector of hits (feature IDs)

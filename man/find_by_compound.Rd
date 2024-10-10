@@ -7,16 +7,16 @@
 find_by_compound(
   data,
   name,
-  column_to_search = "Metabolite.name",
+  column_to_search = "Metabolite.*name",
   ignore.case = TRUE
 )
 }
 \arguments{
 \item{data}{a data.frame object. The feature data of the MS peaks}
 
-\item{name}{character string. The compound name to search}
+\item{name}{regular expression. The compound name to search}
 
-\item{column_to_search}{character string. The column containing annotations}
+\item{column_to_search}{regular expression. The column containing annotations}
 
 \item{ignore.case}{logical. Whether to ignore case in search}
 }

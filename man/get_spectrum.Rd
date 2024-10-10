@@ -9,10 +9,10 @@ get_spectrum(
   var,
   lim = 0.01,
   itlim = 0,
-  mz_col = "Average.Mz",
-  ms2_col = "MS.MS.spectrum",
-  adduct_col = "Adduct.type",
-  isot_col = "MS1.isotopic.spectrum"
+  mz_col = "Average.*Mz",
+  ms2_col = "MS.*MS.*spectrum",
+  adduct_col = "Adduct.*type",
+  isot_col = "MS1.*isotopic.*spectrum"
 )
 }
 \arguments{
@@ -24,13 +24,13 @@ get_spectrum(
 
 \item{itlim}{numeric. Relative abundance cutoff of isotope peaks}
 
-\item{mz_col}{character string. Name of the m/z column}
+\item{mz_col}{regular expression. Name of the m/z column}
 
-\item{ms2_col}{character string. Name of the MS2 spectrm column}
+\item{ms2_col}{regular expression. Name of the MS2 spectrm column}
 
-\item{adduct_col}{character string. Name of the adduct column}
+\item{adduct_col}{regular expression. Name of the adduct column}
 
-\item{isot_col}{character string. Name of the isotope spectrm column}
+\item{isot_col}{regular expression. Name of the isotope spectrm column}
 }
 \value{
 A list of 5 objects:

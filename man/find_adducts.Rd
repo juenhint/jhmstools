@@ -9,7 +9,7 @@ find_adducts(mass, mode = "pos")
 \arguments{
 \item{mass}{numeric. Molecular mass of the precursor}
 
-\item{mode}{character string. Which polarization to use.}
+\item{mode}{regular expression. Which polarization to use.}
 }
 \value{
 data.frame. The m/z values calculated for different adducts

@@ -4,14 +4,14 @@
 \alias{find_mws}
 \title{Find molecular weights for adduct}
 \usage{
-find_mws(feature_data, var, mode = var, mz_col = "Average.Mz")
+find_mws(data, var, mode = var, mz_col = "Average.*Mz")
 }
 \arguments{
-\item{feature_data}{a data.frame object. The feature data of the MS peaks}
+\item{data}{a data.frame object. The feature data of the MS peaks}
 
 \item{var}{character string. Name of the feature to extract}
 
-\item{mode}{character string. Optional. Which polarization to use. Extracts from feature name by default.}
+\item{mode}{regular expression. Optional. Which polarization to use. Extracts from feature name by default.}
 
 \item{mz_col}{character string. Name of the m/z column}
 }

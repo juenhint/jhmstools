@@ -1,6 +1,6 @@
 Package: jhmstools
 Title: Tools for mass spec data exploration
-Version: 0.0.5
+Version: 0.0.7
 Authors@R: 
     person("Jukka", "Hintikka", , "juenhint@jyu.fi", role = c("aut", "cre"))
 Description: Tools for mass spec data exploration and visualization in the format of MS-Dial.
@@ -13,5 +13,6 @@ Suggests:
 Depends: 
     R (>= 2.10)
 Imports:
-    ggplot2
+    ggplot2,
+    openxlsx
 LazyData: true
