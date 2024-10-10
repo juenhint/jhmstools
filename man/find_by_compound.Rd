@@ -8,7 +8,7 @@ find_by_compound(
   data,
   name,
   column_to_search = "Metabolite.name",
-  ignore.case = T
+  ignore.case = TRUE
 )
 }
 \arguments{

@@ -4,17 +4,19 @@
 \alias{get_cors}
 \title{Get correlation matrix between selected features}
 \usage{
-get_cors(exprs, names, use = "complete.obs", ...)
+get_cors(exprs, names, r_lim = 0.8, ...)
 }
 \arguments{
 \item{exprs}{a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)}
 
 \item{names}{vector of character strings. The names of the features (feature IDs)}
 
+\item{r_lim}{what is the abs(r) threshold for displaying the value in the lower triangle}
+
 \item{...}{all other params are passed to \code{cor()}}
 }
 \value{
-a square matrix of correlations
+a square matrix of correlations, lower triangle only contains the values with abs(r) higher than \code{r_lim}
 }
 \description{
 Get correlation matrix between selected features

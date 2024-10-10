@@ -4,7 +4,7 @@
 \alias{histo}
 \title{Plot histogram of peak areas}
 \usage{
-histo(exprs, var, log = F, ...)
+histo(exprs, var, log = FALSE, ...)
 }
 \arguments{
 \item{exprs}{a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)}

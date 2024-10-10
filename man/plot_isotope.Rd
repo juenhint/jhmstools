@@ -4,12 +4,16 @@
 \alias{plot_isotope}
 \title{Plot isotope spectrum}
 \usage{
-plot_isotope(sp, alpha = 0.6, fill = "blue3", width = width, ...)
+plot_isotope(sp, alpha = 0.6, fill = "blue3", width = 1, ...)
 }
 \arguments{
 \item{sp}{list. The spectrum returned by \code{get_spectrum} or \code{get_isotope_spectrum}}
 
 \item{alpha}{numeric. Transparency of bars}
+
+\item{fill}{string or RGB value. Color of bars}
+
+\item{width}{numeric. Width of bars}
 
 \item{...}{all other args are passed to \code{geom_col}}
 }

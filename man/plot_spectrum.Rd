@@ -4,12 +4,16 @@
 \alias{plot_spectrum}
 \title{Plot ms2 spectrum}
 \usage{
-plot_spectrum(sp, alpha = 0.6, fill = "blue3", width = width, ...)
+plot_spectrum(sp, alpha = 0.6, fill = "blue3", width = 1, ...)
 }
 \arguments{
 \item{sp}{list. The spectrum returned by \code{get_spectrum}}
 
 \item{alpha}{numeric. Transparency of bars}
+
+\item{fill}{string or RGB value. Color of bars}
+
+\item{width}{numeric. Width of bars}
 
 \item{...}{all other args are passed to \code{geom_col}}
 }

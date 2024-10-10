@@ -3,14 +3,22 @@
 #'
 #' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
 #' @param names vector of character strings. The names of the features (feature IDs)
+#' @param r_lim  what is the abs(r) threshold for displaying the value in the lower triangle
 #' @param ... all other params are passed to `cor()`
 #'
-#' @return a square matrix of correlations
+#' @return a square matrix of correlations, lower triangle only contains the values with abs(r) higher than `r_lim`
 #'
 #' @export
 #' @importFrom stats cor
-get_cors <- function(exprs, names, use="complete.obs", ...) {
-  return(cor(t(exprs[names,]), use=use, ...))
+get_cors <- function(exprs, names, r_lim = 0.8, ...) {
+  ARGS <- replace(alist(x = t(exprs[names,]), use="complete.obs"), names(list(...)), values = list(...))
+  cors <- do.call(cor, ARGS)
+  for (r in 1:dim(cors)[1]) {
+    for (c in (0+r):dim(cors)[2]) {
+      if (abs(cors[r,c]) < r_lim) cors[c,r] = NA
+    }
+  }
+  return(cors)
 }
 
 #' Plot histogram of peak areas
@@ -22,7 +30,7 @@ get_cors <- function(exprs, names, use="complete.obs", ...) {
 #'
 #' @export
 #' @importFrom graphics hist
-histo <- function(exprs, var, log=F, ...) {
+histo <- function(exprs, var, log=FALSE, ...) {
   if (!log) hist(t(exprs[var,]), ...)
   else hist(log(t(exprs[var,])), ...)
 }
@@ -36,7 +44,7 @@ histo <- function(exprs, var, log=F, ...) {
 #'
 #' @return a vector of strings. The feature IDs of the hits
 #' @export
-find_by_compound <- function(data, name, column_to_search="Metabolite.name", ignore.case=T) {
+find_by_compound <- function(data, name, column_to_search="Metabolite.name", ignore.case=TRUE) {
   inds <- grep(name, data[,column_to_search], ignore.case = ignore.case)
   return(rownames(data)[inds])
 }
@@ -73,7 +81,7 @@ get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.Mz", ms2_
   colnames(spectrum) <- c("mz","ab","rel")
   ret <- list(precursor=precursor, spectrum = spectrum[spectrum$rel>lim,], adduct=adduct,
               isotope_spectrum=itspectrum, feature=id)
-  plot_spectrum(ret)
+  try(plot_spectrum(ret))
   return(ret)
 }
 
@@ -106,7 +114,7 @@ get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.Mz", isot_col
   colnames(spectrum) <- c("mz","ab","rel")
   ret <- list(precursor=precursor, isotope_spectrum = spectrum[spectrum$rel>lim,], adduct=adduct,
               feature=id)
-  plot_isotope(ret)
+  try(plot_isotope(ret))
   return(ret)
 }
 
@@ -115,14 +123,16 @@ get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.Mz", isot_col
 #'
 #' @param sp list. The spectrum returned by `get_spectrum`
 #' @param alpha numeric. Transparency of bars
+#' @param fill string or RGB value. Color of bars
+#' @param width numeric. Width of bars
 #' @param ... all other args are passed to `geom_col`
 #'
 #' @return ggplot object. The mass spec plot.
 #' @export
 #' @import ggplot2
-plot_spectrum <- function(sp, alpha=0.6, fill="blue3", width = width, ...) {
+plot_spectrum <- function(sp, alpha=0.6, fill = "blue3", width = 1, ...) {
   requireNamespace("ggplot2")
-  p <- ggplot(sp[["spectrum"]], aes(x=mz, y=rel)) + geom_col(fill = fill, alpha=alpha, width = 1, ...) +
+  p <- ggplot(sp[["spectrum"]], aes(x=mz, y=rel)) + geom_col(fill=fill, alpha=alpha, width=width, ...) +
     geom_hline(yintercept = 0) + geom_text(aes(label=mz),  hjust = 0, size=4, alpha=alpha) +
     labs(caption=paste0("Precursor m/z ",sp[["precursor"]]))
   print(p)
@@ -134,14 +144,16 @@ plot_spectrum <- function(sp, alpha=0.6, fill="blue3", width = width, ...) {
 #'
 #' @param sp list. The spectrum returned by `get_spectrum` or `get_isotope_spectrum`
 #' @param alpha numeric. Transparency of bars
+#' @param fill string or RGB value. Color of bars
+#' @param width numeric. Width of bars
 #' @param ... all other args are passed to `geom_col`
 #'
 #' @return ggplot object. The mass spec plot.
 #' @export
 #' @import ggplot2
-plot_isotope <- function(sp, alpha=0.6, fill="blue3", width = width, ...) {
+plot_isotope <- function(sp, alpha=0.6, fill="blue3", width = 1, ...) {
   requireNamespace("ggplot2")
-  p <- ggplot(sp[["isotope_spectrum"]], aes(x=mz, y=rel)) + geom_col(fill=fill, alpha=alpha, width=1, ...) +
+  p <- ggplot(sp[["isotope_spectrum"]], aes(x=mz, y=rel)) + geom_col(fill=fill, alpha=alpha, width=width, ...) +
     geom_hline(yintercept = 0) + geom_text(aes(label=mz),  hjust = 0, size=4, alpha=alpha) +
     labs(caption=paste0("Precursor m/z ",sp[["precursor"]]))
   print(p)
