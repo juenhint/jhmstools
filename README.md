@@ -1,2 +1,2 @@
 # jhmstools
-## An R package for ms2 data handling
+## An R package for ms/ms data handling and exploration
