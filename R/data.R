@@ -8,8 +8,12 @@
 #'
 "adducts.neg"
 
-
 #' The observed frequencies of different adducts in MS databases
 #'
 #'
 "adduct.stats"
+
+#' The isotopic and molecular masses of atoms
+#'
+#'
+"atoms"

@@ -62,7 +62,7 @@ get_cors <- function(exprs, names, r_lim = 0.8, ...) {
 #' @importFrom graphics hist
 histo <- function(exprs, var, log=FALSE, ...) {
   if (!log) hist(t(exprs[var,]), ...)
-  else hist(log(t(exprs[var,])), ...)
+  else hist(log10(t(exprs[var,])), ...)
 }
 
 #' Find featured by compound names
@@ -251,6 +251,48 @@ find_mws2 <- function(mz, mode) {
   return(vals)
 }
 
+#' Calculate accurate mass from a molecular formula
+#'
+#' @param mf character string. Molecular formula.
+#' @param monoisotopic logical. Whether to return monoisotopic mass (default) or molar mass.
+#'
+#' @return numeric. The mass of the molecule. NA if any of the symbols are not recognized or contain non-stable elements.
+#' @export
+#'
+find_mwfromformula <- function(mf, monoisotopic=TRUE) {
+  #gsub("\\d", " ", mf)
+  multipl <- as.numeric(regmatches(mf, regexpr("(\\d*)", mf)))
+  multipl <- ifelse(is.na(multipl), 1, multipl)
+  m <- gregexpr("([A-Z][a-z]*)(\\d*)", mf)
+  elements <- regmatches(mf, m)[[1]]
+
+  parsed_formula <- list()
+  for (element in elements) {
+    # Extract the element symbol and count
+    symbol <- sub("\\d.*", "", element)
+    count <- as.numeric(sub("\\D*", "", element))
+    # If count is missing, 1
+    if (is.na(count)) {
+      count <- 1
+    }
+    parsed_formula[[symbol]] <- ifelse(is.null(parsed_formula[[symbol]]),yes = 0,no = parsed_formula[[symbol]]) + count
+  }
+  #multiply
+  parsed_formula <- lapply(parsed_formula, FUN = function(x)x*multipl)
+  masses <- c()
+  #count the total mass, return na if unintelligible
+  for (atom in names(parsed_formula)) {
+    mass <- atoms[atom,"Mass"]*parsed_formula[[atom]]
+    if (!monoisotopic) mass <- atoms[atom,"Atomic.weight"]*parsed_formula[[atom]]
+    if (is.na(mass)) {
+      print("Unparseable molecular formula")
+      masses <- NA
+      break
+    }
+    masses <- c(masses, mass)
+  }
+  return(sum(masses))
+}
 
 #' Find shared molecular weights for two adducts
 #'
