@@ -2,7 +2,7 @@
 % Please edit documentation in R/MS_spectrum_explore.R
 \name{find_by_mw}
 \alias{find_by_mw}
-\title{Find features by molecular weight or molecular formula}
+\title{Find features by molecular mass or molecular formula}
 \usage{
 find_by_mw(data, query, tol = 0.005, mz_col = ".*mz")
 }
@@ -19,5 +19,5 @@ find_by_mw(data, query, tol = 0.005, mz_col = ".*mz")
 matrix. feature_IDs, matched_adducts and accuracy
 }
 \description{
-Find features by molecular weight or molecular formula
+Find features by molecular mass or molecular formula
 }

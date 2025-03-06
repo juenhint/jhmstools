@@ -217,14 +217,14 @@ find_adducts <- function(mass, mode="pos") {
   return(vals)
 }
 
-#' Find molecular weights for adduct
+#' Find molecular masses for adduct
 #'
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param var character string. Name of the feature to extract
 #' @param mode regular expression. Optional. Which polarization to use. Extracts from feature name by default.
 #' @param mz_col character string. Name of the m/z column
 #'
-#' @return data.frame. The molecular weights derived from different assumed adducts
+#' @return data.frame. The molecular masses derived from different assumed adducts
 #' @export
 find_mws <- function(data, var, mode=var, mz_col="Average.*Mz") {
   mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
@@ -236,12 +236,12 @@ find_mws <- function(data, var, mode=var, mz_col="Average.*Mz") {
   return(vals)
 }
 
-#' Find molecular weights for adduct m/z
+#' Find molecular masses for adduct m/z
 #'
 #' @param mz numeric. m/z of the precursor
 #' @param mode regular expression. Which polarization to use.
 #'
-#' @return data.frame. The molecular weights derived from different assumed adducts
+#' @return data.frame. The molecular masses derived from different assumed adducts
 #' @export
 find_mws2 <- function(mz, mode="pos") {
   #load("R_files/adducts_pos.Rda")
@@ -376,7 +376,7 @@ find_by_MS2peaks <- function(data, peaks, operator=all, tol=0.005, lim=0.03, ms2
   return(hits)
 }
 
-#'Find features by molecular weight or molecular formula
+#'Find features by molecular mass or molecular formula
 #'
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param query numeric/string. Either the molecular mass or the molecular formula for adduct search

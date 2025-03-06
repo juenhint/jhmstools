@@ -2,7 +2,7 @@
 % Please edit documentation in R/MS_spectrum_explore.R
 \name{find_mws}
 \alias{find_mws}
-\title{Find molecular weights for adduct}
+\title{Find molecular masses for adduct}
 \usage{
 find_mws(data, var, mode = var, mz_col = "Average.*Mz")
 }
@@ -16,8 +16,8 @@ find_mws(data, var, mode = var, mz_col = "Average.*Mz")
 \item{mz_col}{character string. Name of the m/z column}
 }
 \value{
-data.frame. The molecular weights derived from different assumed adducts
+data.frame. The molecular masses derived from different assumed adducts
 }
 \description{
-Find molecular weights for adduct
+Find molecular masses for adduct
 }

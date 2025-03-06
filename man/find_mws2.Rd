@@ -2,7 +2,7 @@
 % Please edit documentation in R/MS_spectrum_explore.R
 \name{find_mws2}
 \alias{find_mws2}
-\title{Find molecular weights for adduct m/z}
+\title{Find molecular masses for adduct m/z}
 \usage{
 find_mws2(mz, mode = "pos")
 }
@@ -12,8 +12,8 @@ find_mws2(mz, mode = "pos")
 \item{mode}{regular expression. Which polarization to use.}
 }
 \value{
-data.frame. The molecular weights derived from different assumed adducts
+data.frame. The molecular masses derived from different assumed adducts
 }
 \description{
-Find molecular weights for adduct m/z
+Find molecular masses for adduct m/z
 }
