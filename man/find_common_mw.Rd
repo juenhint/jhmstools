@@ -2,7 +2,7 @@
 % Please edit documentation in R/MS_spectrum_explore.R
 \name{find_common_mw}
 \alias{find_common_mw}
-\title{Find shared molecular weights for two adducts}
+\title{Find shared molecular masses for two molecular features}
 \usage{
 find_common_mw(
   data,
@@ -11,7 +11,8 @@ find_common_mw(
   mode1 = var1,
   mode2 = var2,
   tol = 0.005,
-  use.mass2adduct = T
+  use.mass2adduct = FALSE,
+  mz_col = ".*mz"
 )
 }
 \arguments{
@@ -25,10 +26,16 @@ find_common_mw(
 
 \item{mode2}{regular expression. Optional. Polarization of 2nd adduct. Extracts from feature name by default.}
 
-\item{tol}{Δ m/z tolerance for adducts}
+\item{tol}{numeric. Δ m/z tolerance for adducts}
 
-\item{use.mass2adduct}{whether to also get adduct data from the package mass2adduct}
+\item{use.mass2adduct}{boolean. Whether to also get fragment data from the package mass2adduct}
+
+\item{mz_col}{regular expression. Name of the column containing m/z values}
+}
+\value{
+a data.frame. Suggested adducts for each feature, accuracy and calculated average molecular mass
 }
 \description{
-Find shared molecular weights for two adducts
+Checks whether the two molecular features have a shared molecular masses within given m/z tolerance.
+Additionally, can use mass2adduct to find molecular fragments between the two features.
 }

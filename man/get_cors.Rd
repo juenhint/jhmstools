@@ -11,12 +11,12 @@ get_cors(exprs, names, r_lim = 0.8, ...)
 
 \item{names}{vector of character strings. The names of the features (feature IDs)}
 
-\item{r_lim}{what is the abs(r) threshold for displaying the value in the lower triangle}
+\item{r_lim}{numeric. The abs(R) threshold for displaying the value in the lower triangle}
 
 \item{...}{all other params are passed to \code{cor()}}
 }
 \value{
-a square matrix of correlations, lower triangle only contains the values with abs(r) higher than \code{r_lim}
+a square matrix of correlations, lower triangle only contains the values with abs(R) higher than \code{r_lim}
 }
 \description{
 Get correlation matrix between selected features

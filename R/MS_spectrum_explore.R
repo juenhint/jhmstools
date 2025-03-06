@@ -33,10 +33,10 @@ read_tables_from_MSDIALfile <- function(file, feature_IDs_present=TRUE) {
 #'
 #' @param exprs a numeric data.frame of matrix. A dataframe of peak areas features\*samples (rows\*columns)
 #' @param names vector of character strings. The names of the features (feature IDs)
-#' @param r_lim  what is the abs(r) threshold for displaying the value in the lower triangle
+#' @param r_lim  numeric. The abs(R) threshold for displaying the value in the lower triangle
 #' @param ... all other params are passed to `cor()`
 #'
-#' @return a square matrix of correlations, lower triangle only contains the values with abs(r) higher than `r_lim`
+#' @return a square matrix of correlations, lower triangle only contains the values with abs(R) higher than `r_lim`
 #'
 #' @export
 #' @importFrom stats cor
@@ -65,7 +65,7 @@ histo <- function(exprs, var, log=FALSE, ...) {
   else hist(log10(t(exprs[var,])), ...)
 }
 
-#' Find featured by compound names
+#' Find features by annotated names
 #'
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param name regular expression. The compound name to search
@@ -74,7 +74,7 @@ histo <- function(exprs, var, log=FALSE, ...) {
 #'
 #' @return a vector of strings. The feature IDs of the hits
 #' @export
-find_by_compound <- function(data, name, column_to_search="Metabolite.*name", ignore.case=TRUE) {
+find_by_compound <- function(data, name, column_to_search=".*Metabolite.*name", ignore.case=TRUE) {
   column_to_search<-grep(column_to_search, colnames(data))[1]
   inds <- grep(name, data[,column_to_search], ignore.case = ignore.case)
   return(rownames(data)[inds])
@@ -99,7 +99,7 @@ find_by_compound <- function(data, name, column_to_search="Metabolite.*name", ig
 #'  feature = the variable name
 #' @export
 #'
-get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.*Mz", ms2_col="MS.*MS.*spectrum", adduct_col="Adduct.*type", isot_col="MS1.*isotopic.*spectrum") {
+get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col=".*Mz.*", ms2_col=".*MS.*MS.*spectrum", adduct_col=".*Adduct.*", isot_col=".*isotopic.*spectrum") {
   mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
   ms2_col <- grep(ms2_col, colnames(data), ignore.case = T, value = T)[1]
   adduct_col <- grep(adduct_col, colnames(data), ignore.case = T, value = T)[1]
@@ -139,7 +139,7 @@ get_spectrum <- function(data, var, lim=0.01, itlim=0, mz_col="Average.*Mz", ms2
 #'
 #' @export
 #'
-get_isotope_spectrum <- function(data, var, lim=0, mz_col="Average.*Mz", isot_col="MS1.*isotopic.*spectrum", adduct_col="Adduct.*type") {
+get_isotope_spectrum <- function(data, var, lim=0, mz_col=".*Mz", isot_col=".*isotopic.*spectrum", adduct_col=".*Adduct.*") {
   mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
   adduct_col <- grep(adduct_col, colnames(data), ignore.case = T, value = T)[1]
   isot_col <- grep(isot_col, colnames(data), ignore.case = T, value = T)[1]
@@ -243,7 +243,7 @@ find_mws <- function(data, var, mode=var, mz_col="Average.*Mz") {
 #'
 #' @return data.frame. The molecular weights derived from different assumed adducts
 #' @export
-find_mws2 <- function(mz, mode) {
+find_mws2 <- function(mz, mode="pos") {
   #load("R_files/adducts_pos.Rda")
   #load("R_files/adducts_neg.Rda")
   addcts <- list(adducts.neg,adducts.pos)[[grepl("pos", mode, ignore.case = T)+1]]
@@ -294,25 +294,44 @@ find_mwfromformula <- function(mf, monoisotopic=TRUE) {
   return(sum(masses))
 }
 
-#' Find shared molecular weights for two adducts
+#' Find shared molecular masses for two molecular features
+#'
+#' @description
+#' Checks whether the two molecular features have a shared molecular masses within given m/z tolerance.
+#' Additionally, can use mass2adduct to find molecular fragments between the two features.
 #'
 #' @param data a data.frame object. The feature data of the MS peaks
 #' @param var1 character string. Name of the 1st feature to extract
 #' @param var2 character string. Name of the 2nd feature to extract
 #' @param mode1 regular expression. Optional. Polarization of 1st adduct. Extracts from feature name by default.
 #' @param mode2 regular expression. Optional. Polarization of 2nd adduct. Extracts from feature name by default.
-#' @param tol Δ m/z tolerance for adducts
-#' @param use.mass2adduct whether to also get adduct data from the package mass2adduct
+#' @param tol numeric. Δ m/z tolerance for adducts
+#' @param use.mass2adduct boolean. Whether to also get fragment data from the package mass2adduct
+#' @param mz_col regular expression. Name of the column containing m/z values
 #'
 #' @export
+#' @return a data.frame. Suggested adducts for each feature, accuracy and calculated average molecular mass
 #'
-find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, use.mass2adduct=T) {
-  mws1 <- find_mws(data, var1, mode1)
-  mws2 <- find_mws(data, var2, mode2)
-  name_m <- mapply(rownames(mws1), FUN=function(x) {paste0("var1:",x," var2:", rownames(mws2))})
-  diffm <- mapply(mws1$calculated_mass, FUN=function(x) {abs(mws2$calculated_mass - x)})
-  hits <- cbind(diffm[diffm<=tol],name_m[diffm<=tol])
-  print( hits[order(hits[,1]),] )
+find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, use.mass2adduct=FALSE, mz_col= ".*mz") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  if (abs(data[var1,mz_col] - data[var2,mz_col]) < tol) return(paste0("Same m/z within tolerance of ",tol," Da"))
+  mws1 <- find_mws(data, var1, mode1, mz_col = mz_col)
+  mws2 <- find_mws(data, var2, mode2, mz_col = mz_col)
+
+  diffm <- mapply(mws2$calculated_mass, FUN=function(x) {abs(mws1$calculated_mass - x)})
+  rownames(diffm) <- rownames(mws1)
+  colnames(diffm) <- rownames(diffm)
+  avrg <- mapply(mws2$calculated_mass, FUN=function(x) {
+    mapply(mws1$calculated_mass, FUN=function(y){mean(c(x,y))})
+  })
+  avrg <- as.data.frame(as.table(avrg))
+
+  diffm <- as.data.frame(as.table(diffm))
+  diffm[["A"]] <- avrg[["Freq"]]
+  colnames(diffm) <- c(var1,var2,"Accuracy(Da)","Calculated_MW(Da)")
+
+  #hits <- cbind(diffm[diffm<tol],name_m[diffm<tol],rownames(mws1)[diffm<tol], rownames(mws2)[diffm<tol])
+  #print( hits[order(hits[,1]),] )
 
   if (use.mass2adduct) {
     if (!requireNamespace("mass2adduct",quietly = T))
@@ -320,10 +339,11 @@ find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, 
       stop("Package \"mass2adduct\" is required for this function")
     }
     diffs <- mass2adduct::adducts
-    diffs[["diff"]] <- abs(diffs$mass - abs(data[var1,"Average.Mz"] - data[var2,"Average.Mz"]))
+    diffs[["diff"]] <- abs(diffs$mass - abs(data[var1,mz_col] - data[var2,mz_col]))
     diffs <- subset(diffs, diff <= tol)
     print(diffs)
   }
+  return(diffm[diffm[["Accuracy(Da)"]] < tol,])
 }
 
 #'Find features by presence of MS2 peaks
@@ -353,5 +373,51 @@ find_by_MS2peaks <- function(data, peaks, operator=all, tol=0.005, lim=0.03, ms2
     peaks_hits <- mapply(peaks, FUN=function(p) any(abs(p - spectrum$mz) < tol))
     if (operator(peaks_hits)) hits <- c(hits, r)
   }
+  return(hits)
+}
+
+#'Find features by molecular weight or molecular formula
+#'
+#' @param data a data.frame object. The feature data of the MS peaks
+#' @param query numeric/string. Either the molecular mass or the molecular formula for adduct search
+#' @param tol numeric. m/z tolerance for peak matching
+#' @param mz_col regular expression. Name of the m/z containing column
+#'
+#' @return matrix. feature_IDs, matched_adducts and accuracy
+#'
+#' @export
+find_by_mw <- function(data, query, tol=0.005, mz_col=".*mz") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  if (!is.numeric(query)) {
+    query = find_mwfromformula(query)
+  }
+  qquery = find_adducts(query)
+
+  hits <- c()
+  for (q in rownames(qquery)) {
+    diff <- abs(data[[mz_col]] - qquery[q,"mz"])
+    newhits <- rownames(data)[diff < tol]
+    if (length(newhits) > 0) {
+      hits <- rbind(hits, cbind(newhits, diff[diff < tol], q))
+    }
+  }
+  colnames(hits) <- c("Feature_ID","accuracy_Da","adduct_match")
+  return(hits)
+}
+
+
+#' Find features by m/z value
+#'
+#' @param data a data.frame object. The feature data of the MS peaks
+#' @param mz numeric. The m/z value for peak matching
+#' @param tol numeric. m/z tolerance for peak matching
+#' @param mz_col regular expression. Name of the m/z containing column
+#'
+#' @returns a vector of hits (feature IDs)
+#' @export
+#'
+find_by_mz <- function(data, mz, tol=0.005, mz_col=".*mz") {
+  mz_col <- grep(mz_col, colnames(data), ignore.case = T, value = T)[1]
+  hits <- rownames(data)[abs(data[[mz_col]] - mz) < tol]
   return(hits)
 }

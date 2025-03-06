@@ -9,10 +9,10 @@ get_spectrum(
   var,
   lim = 0.01,
   itlim = 0,
-  mz_col = "Average.*Mz",
-  ms2_col = "MS.*MS.*spectrum",
-  adduct_col = "Adduct.*type",
-  isot_col = "MS1.*isotopic.*spectrum"
+  mz_col = ".*Mz.*",
+  ms2_col = ".*MS.*MS.*spectrum",
+  adduct_col = ".*Adduct.*",
+  isot_col = ".*isotopic.*spectrum"
 )
 }
 \arguments{

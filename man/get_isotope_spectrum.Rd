@@ -8,9 +8,9 @@ get_isotope_spectrum(
   data,
   var,
   lim = 0,
-  mz_col = "Average.*Mz",
-  isot_col = "MS1.*isotopic.*spectrum",
-  adduct_col = "Adduct.*type"
+  mz_col = ".*Mz",
+  isot_col = ".*isotopic.*spectrum",
+  adduct_col = ".*Adduct.*"
 )
 }
 \arguments{

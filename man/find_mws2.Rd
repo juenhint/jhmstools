@@ -4,7 +4,7 @@
 \alias{find_mws2}
 \title{Find molecular weights for adduct m/z}
 \usage{
-find_mws2(mz, mode)
+find_mws2(mz, mode = "pos")
 }
 \arguments{
 \item{mz}{numeric. m/z of the precursor}

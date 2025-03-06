@@ -2,12 +2,12 @@
 % Please edit documentation in R/MS_spectrum_explore.R
 \name{find_by_compound}
 \alias{find_by_compound}
-\title{Find featured by compound names}
+\title{Find features by annotated names}
 \usage{
 find_by_compound(
   data,
   name,
-  column_to_search = "Metabolite.*name",
+  column_to_search = ".*Metabolite.*name",
   ignore.case = TRUE
 )
 }
@@ -24,5 +24,5 @@ find_by_compound(
 a vector of strings. The feature IDs of the hits
 }
 \description{
-Find featured by compound names
+Find features by annotated names
 }
