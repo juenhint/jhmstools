@@ -320,7 +320,7 @@ find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, 
 
   diffm <- mapply(mws2$calculated_mass, FUN=function(x) {abs(mws1$calculated_mass - x)})
   rownames(diffm) <- rownames(mws1)
-  colnames(diffm) <- rownames(diffm)
+  colnames(diffm) <- rownames(mws2)
   avrg <- mapply(mws2$calculated_mass, FUN=function(x) {
     mapply(mws1$calculated_mass, FUN=function(y){mean(c(x,y))})
   })
@@ -341,9 +341,12 @@ find_common_mw <- function(data, var1, var2, mode1=var1, mode2=var2, tol=0.005, 
     diffs <- mass2adduct::adducts
     diffs[["diff"]] <- abs(diffs$mass - abs(data[var1,mz_col] - data[var2,mz_col]))
     diffs <- subset(diffs, diff <= tol)
+    if (dim(diffs)[1] == 0) diffs = paste0("No fragment matches from mass2adduct within tolerance of ",tol," Da")
     print(diffs)
   }
-  return(diffm[diffm[["Accuracy(Da)"]] < tol,])
+  to_ret <- diffm[diffm[["Accuracy(Da)"]] < tol,]
+  if (dim(to_ret)[1] == 0) to_ret = paste0("No matches within tolerance of ",tol," Da: ",var1," - ",var2)
+  return(to_ret)
 }
 
 #'Find features by presence of MS2 peaks
