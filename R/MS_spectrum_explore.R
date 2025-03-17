@@ -394,7 +394,7 @@ find_by_mw <- function(data, query, tol=0.005, mz_col=".*mz") {
   if (!is.numeric(query)) {
     query = find_mwfromformula(query)
   }
-  qquery = find_adducts(query)
+  qquery = rbind(find_adducts(query,mode = "pos"),find_adducts(query,mode = "neg"))
 
   hits <- c()
   for (q in rownames(qquery)) {
